@@ -1,0 +1,34 @@
+{
+  "name": "annual-report",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@galacean/effects": "^2.2.0",
+    "@number-flow/vue": "^0.4.1",
+    "autoprefixer": "^10.4.20",
+    "cnjm-postcss-px-to-viewport": "^1.0.1",
+    "countup.js": "^2.8.0",
+    "gsap": "^3.12.5",
+    "hammerjs": "^2.0.8",
+    "html2canvas": "^1.4.1",
+    "v-viewer": "^3.0.11",
+    "sass": "^1.83.1",
+    "viewerjs": "^1.11.7",
+    "vue": "^3.5.13",
+    "vue3-scroll-seamless": "^1.0.6",
+    "vue3-seamless-scroll": "^2.0.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "less": "^4.2.1",
+    "less-loader": "^12.2.0",
+    "postcss-px-to-viewport": "^1.1.1",
+    "vite": "^6.0.5"
+  }
+}
