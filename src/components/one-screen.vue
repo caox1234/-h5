@@ -2,18 +2,30 @@
   <div class="container-1">
     <!--流星背景-->
     <MeteorView>
-      <img class="img-title" src="@/assets/images/one/img-title.png" />
+      <img
+        class="img-title"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/img-title.png"
+      />
     </MeteorView>
-    <img class="halo" src="@/assets/images/one/halo.png" />
+    <img
+      class="halo"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/halo.png"
+    />
     <div class="bottom">
       <!--船-->
-      <img class="ship" src="@/assets/images/one/ship.png" />
+      <img
+        class="ship"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/ship.png"
+      />
       <!--蝴蝶-->
-      <img class="hudie" src="@/assets/images/one/hudie.png" />
+      <img
+        class="hudie"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/hudie.png"
+      />
 
       <!--打开记忆之门开始按钮-->
-      <startButton class="start-button"></startButton>
-      <butterfly class="b1"></butterfly>
+      <startButton class="start-button" @click="jumpNext()"></startButton>
+      <!-- <butterfly class="b1"></butterfly> -->
     </div>
   </div>
 </template>
@@ -25,16 +37,24 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import startButton from "./start-button.vue";
 import butterfly from "./butterfly.vue";
 import MeteorView from "./meteor-view.vue";
+
+const emit = defineEmits(["next"]);
+
+// 进入下一屏
+const jumpNext = () => {
+  emit("next");
+};
 </script>
 <style lang="less" scoped>
 .container-1 {
   width: 100vw;
   height: 100vh;
-  background-image: url("@/assets/images/one/bg.png");
+  background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
+  overflow: hidden;
   animation: fadeBg 1.5s ease-out forwards;
   .meteor-box {
     width: 100vw;
@@ -67,15 +87,14 @@ import MeteorView from "./meteor-view.vue";
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url("@/assets/images/one/img-sea.png");
+    background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/img-sea.png");
     background-size: 100%; /* 设置宽度自动、高度为100% */
     background-repeat: repeat-y; /* 使背景在垂直方向上平铺 */
     background-position: top center; /* 背景从顶部开始 */
     background-repeat: no-repeat;
     // 船
     .ship {
-      width: 351px;
-      height: 826px;
+      width: 321px;
       position: absolute;
       bottom: 0;
       right: 0;
@@ -84,8 +103,7 @@ import MeteorView from "./meteor-view.vue";
     }
     // 蝴蝶
     .hudie {
-      width: 342px;
-      height: 579px;
+      width: 302px;
       position: absolute;
       bottom: 250px;
       left: 50px;

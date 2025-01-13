@@ -1,14 +1,23 @@
 <template>
-  <div class="container-3" :class="currClass">
+  <div class="container-3" :class="currClass" ref="transitionView">
     <div class="bottom">
       <div class="ndhy" @click="toggleComponent">
-        <img class="icon-photo" src="@/assets/images/three/icon-photo.png" />
-        <img class="img-text-1" src="@/assets/images/three/img-text-1.png" />
+        <img
+          class="icon-photo"
+          src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/icon-photo.png"
+        />
+        <img
+          class="img-text-1"
+          src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/img-text-1.png"
+        />
       </div>
       <div class="text-1">这一年</div>
       <div class="text-2">我们收获了很多<span>美好的回忆</span></div>
       <div class="text-3">（生日会、新生趴、聚享学社…）</div>
-      <img class="icon-up" src="@/assets/images/icon-up.png" />
+      <img
+        class="icon-up"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon-up.png"
+      />
     </div>
     <transition name="fade">
       <photoWall v-if="shwoPhoto" @update:close="shwoPhoto = false" />
@@ -21,12 +30,22 @@
  */
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import photoWall from "./photo-wall.vue";
+import Hammer from "hammerjs";
+
+const emit = defineEmits(["next"]);
+
 // 背景图class
 const backgrounds = ["bg-1", "bg-2", "bg-3", "bg-4", "bg-5", "bg-6"];
 // 设定初始索引
 const indexNumber = ref(0);
 let interval = null;
 const shwoPhoto = ref(false);
+
+let hammer = null;
+const transitionView = ref();
+let startPosition = { x: 0, y: 0 }; // 记录按压开始的坐标
+let isMoving = false; // 标记是否开始移动
+
 const currClass = computed(() => {
   return backgrounds[indexNumber.value % backgrounds.length];
 });
@@ -57,6 +76,63 @@ onBeforeUnmount(() => {
     clearInterval(interval); // 清除定时器，防止内存泄漏
   }
 });
+
+onMounted(() => {
+  if (transitionView.value) {
+    hammer = new Hammer(transitionView.value);
+
+    // 配置 pan 手势识别器
+    hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+
+    // 监听按压开始事件
+    hammer.on("panstart", (ev) => {
+      startPosition = { x: ev.center.x, y: ev.center.y }; // 记录按压的起始坐标
+      isMoving = false; // 重置移动标志
+    });
+
+    // 监听按压移动事件
+    hammer.on("panmove", (ev) => {
+      if (!isMoving) {
+        // 判断是否开始移动超过一定的距离
+        const distance = Math.sqrt(
+          Math.pow(ev.center.x - startPosition.x, 2) +
+            Math.pow(ev.center.y - startPosition.y, 2)
+        );
+
+        if (distance > 10) {
+          // 设定一个阈值，移动超过 10px 就认为开始移动
+          isMoving = true; // 开始移动
+        }
+      }
+    });
+
+    // 监听按压结束事件
+    hammer.on("panend", (ev) => {
+      if (isMoving) {
+        // 计算最终移动的距离并判断是否满足条件
+        const endPosition = { x: ev.center.x, y: ev.center.y };
+        const distance = Math.sqrt(
+          Math.pow(endPosition.x - startPosition.x, 2) +
+            Math.pow(endPosition.y - startPosition.y, 2)
+        );
+
+        if (distance > 50) {
+          // 根据需求调整距离阈值
+          console.log("成功完成按压并滑动");
+          emit("next");
+        }
+      } else {
+        console.log("按压没有足够的滑动距离");
+      }
+    });
+  } else {
+    console.error("未找到 transitionView 元素");
+  }
+});
+// 清理事件监听
+onBeforeUnmount(() => {
+  hammer.destroy();
+});
 </script>
 <style lang="less" scoped>
 .fade-enter-active,
@@ -82,33 +158,34 @@ onBeforeUnmount(() => {
   height: 100vh;
   transition: background 1s ease-in-out;
   background-size: cover;
-  background: url("@/assets/images/three/bg-1.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-1.jpg");
   position: relative;
   animation: fadeBg 1.5s ease-out forwards;
   background-position: bottom center;
+  overflow: hidden;
 }
 .bg-1 {
-  background: url("@/assets/images/three/bg-1.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-1.jpg");
   background-size: cover;
 }
 .bg-2 {
-  background: url("@/assets/images/three/bg-2.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-2.jpg");
   background-size: cover;
 }
 .bg-3 {
-  background: url("@/assets/images/three/bg-3.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-3.jpg");
   background-size: cover;
 }
 .bg-4 {
-  background: url("@/assets/images/three/bg-4.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-4.jpg");
   background-size: cover;
 }
 .bg-5 {
-  background: url("@/assets/images/three/bg-5.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-5.jpg");
   background-size: cover;
 }
 .bg-6 {
-  background: url("@/assets/images/three/bg-6.jpg");
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/three/bg-6.jpg");
   background-size: cover;
 }
 

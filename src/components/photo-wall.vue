@@ -11,7 +11,7 @@
             <li class="li-item" v-for="(item, i) of list[0]" :key="item">
               <img
                 class="site-view"
-                :src="`/src/assets/images/photo/${item}.jpg`"
+                :src="`${OSSUrl}/photo/${item}.jpg`"
                 alt=""
               />
             </li>
@@ -26,7 +26,7 @@
             <li class="li-item" v-for="(item, i) of list[1]" :key="item">
               <img
                 class="site-view"
-                :src="`/src/assets/images/photo/${item}.jpg`"
+                :src="`${OSSUrl}/photo/${item}.jpg`"
                 alt=""
               />
             </li>
@@ -41,7 +41,7 @@
             <li class="li-item" v-for="(item, i) of list[2]" :key="item">
               <img
                 class="site-view"
-                :src="`/src/assets/images/photo/${item}.jpg`"
+                :src="`${OSSUrl}/photo/${item}.jpg`"
                 alt=""
               />
             </li>
@@ -58,6 +58,7 @@ import { reactive, onUnmounted } from "vue";
 import { vue3ScrollSeamless } from "vue3-scroll-seamless";
 import "viewerjs/dist/viewer.css";
 import { api as viewerApi } from "v-viewer";
+const OSSUrl = import.meta.env.VITE_OSS_BASE_URL;
 const emit = defineEmits(["update:close"]);
 const list = reactive([
   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -69,16 +70,19 @@ const classOptions = {
   limitMoveNum: 3,
   direction: 2,
   step: 1,
+  hoverStop: false,
 };
 const classOptions1 = {
   limitMoveNum: 3,
   direction: 3,
   step: 1,
+  hoverStop: false,
 };
 const classOptions2 = {
   limitMoveNum: 3,
   direction: 2,
   step: 1,
+  hoverStop: false,
 };
 const getSrc = (el) => {
   return el.getAttribute("src");
@@ -138,7 +142,8 @@ onUnmounted(() => {
   width: 86px;
   height: 86px;
   position: absolute;
-  background: url("@/assets/images/icon_close.png") no-repeat;
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon_close.png")
+    no-repeat;
   background-size: contain;
   left: 50%;
   margin-left: -43px;

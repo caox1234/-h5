@@ -1,5 +1,5 @@
 <template>
-  <div class="container-4">
+  <div class="container-4" ref="transitionView">
     <!-- 用于显示彩带 -->
     <div class="confetti-container" ref="confettiContainer"></div>
     <!--文字-->
@@ -11,30 +11,76 @@
           >力量</span
         >
       </p>
+      <img
+        class="icon-up"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon-up.png"
+      />
     </div>
     <!--气球-->
-    <img class="qq-1 qiqiu" src="@/assets/images/four/qq-1.png" />
-    <img class="qq-2 qiqiu" src="@/assets/images/four/qq-2.png" />
-    <img class="qq-3 qiqiu" src="@/assets/images/four/qq-3.png" />
-    <img class="qq-4 qiqiu" src="@/assets/images/four/qq-4.png" />
-    <img class="qq-5 qiqiu" src="@/assets/images/four/qq-5.png" />
-    <img class="qq-6 qiqiu" src="@/assets/images/four/qq-6.png" />
-    <img class="qq-7 qiqiu" src="@/assets/images/four/qq-7.png" />
-    <img class="qq-8 qiqiu" src="@/assets/images/four/qq-8.png" />
+    <img
+      class="qq-1 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-1.png"
+    />
+    <img
+      class="qq-2 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-2.png"
+    />
+    <img
+      class="qq-3 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-3.png"
+    />
+    <img
+      class="qq-4 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-4.png"
+    />
+    <img
+      class="qq-5 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-5.png"
+    />
+    <img
+      class="qq-6 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-6.png"
+    />
+    <img
+      class="qq-7 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-7.png"
+    />
+    <img
+      class="qq-8 qiqiu"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/qq-8.png"
+    />
 
     <!--人物奔跑-->
     <div class="bottom-4">
       <!--奔跑过程-1-->
-      <img class="bp-1" src="@/assets/images/four/xj-1.png" />
+      <img
+        class="bp-1"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/xj-1.png"
+      />
       <!--奔跑过程-2-->
-      <img class="bp-2" src="@/assets/images/four/xj-2.png" />
+      <img
+        class="bp-2"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/xj-2.png"
+      />
       <!--奔跑过程-3-->
-      <img class="bp-3" src="@/assets/images/four/xj-3.png" />
+      <img
+        class="bp-3"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/xj-3.png"
+      />
       <!--冲刺线-1-->
-      <img class="cc-line lg-1" src="@/assets/images/four/lg-1.png" />
-      <img class="cc-line lg-3" src="@/assets/images/four/lg-1.png" />
+      <img
+        class="cc-line lg-1"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/lg-1.png"
+      />
+      <img
+        class="cc-line lg-3"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/lg-1.png"
+      />
       <!--冲刺线-2-->
-      <img class="cc-line lg-2" src="@/assets/images/four/lg-2.png" />
+      <img
+        class="cc-line lg-2"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/lg-2.png"
+      />
     </div>
   </div>
 </template>
@@ -42,8 +88,16 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { gsap } from "gsap";
+import Hammer from "hammerjs";
+
+const emit = defineEmits(["next"]);
 
 let interval = null;
+
+let hammer = null;
+const transitionView = ref();
+let startPosition = { x: 0, y: 0 }; // 记录按压开始的坐标
+let isMoving = false; // 标记是否开始移动
 
 // 引用彩带容器
 const confettiContainer = ref(null);
@@ -115,18 +169,76 @@ onBeforeUnmount(() => {
     clearInterval(interval); // 清除定时器，防止内存泄漏
   }
 });
+
+onMounted(() => {
+  if (transitionView.value) {
+    hammer = new Hammer(transitionView.value);
+
+    // 配置 pan 手势识别器
+    hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+
+    // 监听按压开始事件
+    hammer.on("panstart", (ev) => {
+      startPosition = { x: ev.center.x, y: ev.center.y }; // 记录按压的起始坐标
+      isMoving = false; // 重置移动标志
+    });
+
+    // 监听按压移动事件
+    hammer.on("panmove", (ev) => {
+      if (!isMoving) {
+        // 判断是否开始移动超过一定的距离
+        const distance = Math.sqrt(
+          Math.pow(ev.center.x - startPosition.x, 2) +
+            Math.pow(ev.center.y - startPosition.y, 2)
+        );
+
+        if (distance > 10) {
+          // 设定一个阈值，移动超过 10px 就认为开始移动
+          isMoving = true; // 开始移动
+        }
+      }
+    });
+
+    // 监听按压结束事件
+    hammer.on("panend", (ev) => {
+      if (isMoving) {
+        // 计算最终移动的距离并判断是否满足条件
+        const endPosition = { x: ev.center.x, y: ev.center.y };
+        const distance = Math.sqrt(
+          Math.pow(endPosition.x - startPosition.x, 2) +
+            Math.pow(endPosition.y - startPosition.y, 2)
+        );
+
+        if (distance > 50) {
+          // 根据需求调整距离阈值
+          console.log("成功完成按压并滑动");
+          emit("next");
+        }
+      } else {
+        console.log("按压没有足够的滑动距离");
+      }
+    });
+  } else {
+    console.error("未找到 transitionView 元素");
+  }
+});
+// 清理事件监听
+onBeforeUnmount(() => {
+  hammer.destroy();
+});
 </script>
 
 <style lang="less" scoped>
 .container-4 {
   width: 100vw;
   height: 100vh;
-  background-image: url("@/assets/images/four/bg.png");
+  background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/four/bg.png");
   background-size: cover;
   background-position: bottom center;
   background-repeat: no-repeat;
   position: relative;
   animation: fadeBg 1.5s ease-out forwards;
+  overflow: hidden;
 }
 // 彩带盒子
 .confetti-container {
@@ -333,6 +445,29 @@ onBeforeUnmount(() => {
   100% {
     opacity: 1; /* 结束时完全不透明 */
     transform: translateY(0); /* 结束时位于正常位置 */
+  }
+}
+.icon-up {
+  width: 47px;
+  height: 45px;
+  margin: 92px auto 84px;
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  animation: up 3s ease-in-out infinite;
+}
+/* 浮动动画 */
+@keyframes up {
+  0% {
+    transform: translateY(0); /* 初始位置 */
+  }
+  50% {
+    transform: translateY(-20px); /* 上浮 */
+  }
+  100% {
+    transform: translateY(0); /* 回到初始位置 */
   }
 }
 </style>

@@ -30,11 +30,12 @@ const emit = defineEmits(["update:modelValue"]);
 const showModal = ref(props.modelValue);
 const container = ref(null);
 const player = ref(null);
+const composition = ref(null);
 const jsonList = [
-  "/animation/transition-1/transition-1.json",
-  "/animation/transition-2/transition-2.json",
-  "/animation/transition-3/transition-3.json",
-  "/animation/transition-4/transition-4.json",
+  "https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/animation/transition-1/transition-1.json",
+  "https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/animation/transition-2/transition-2.json",
+  "https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/animation/transition-3/transition-3.json",
+  "https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/animation/transition-4/transition-4.json",
 ];
 
 watch(
@@ -42,29 +43,34 @@ watch(
   (newValue) => {
     showModal.value = newValue;
     if (newValue) {
-      // if (props.checkNumber === 0) return;
+      if (props.checkNumber === 0) return;
       loadScene(props.checkNumber);
     }
   },
   { deep: true }
 );
+// 预先加载
+const loadScene = async (index) => {
+  // 播放
+  if (index > 3) return;
+  composition.value.play();
+  // 预加载下一个
+  composition.value = await player.value.loadScene(jsonList[index], {
+    autoplay: false,
+  });
+};
+// 播放
 onMounted(async () => {
   // 初始化 Player 实例
   player.value = new Player({
     container: container.value,
     interactive: true,
   });
-
+  composition.value = await player.value.loadScene(jsonList[0], {
+    autoplay: false,
+  });
   console.log("加载动画完成");
 });
-const loadScene = (index) => {
-  if(jsonList[index]){
-    console.log('有')
-   player.value.loadScene(jsonList[index]);
-  }else{
-    console.log('没有');
-  }
-};
 
 onBeforeUnmount(() => {
   // 释放 Player 资源
@@ -72,6 +78,18 @@ onBeforeUnmount(() => {
     player.value.dispose();
     player.value = null;
   }
+});
+const updateScreenSize = () => {
+  player.value.resize();
+};
+// 在组件挂载时添加事件监听
+onMounted(() => {
+  window.addEventListener("resize", updateScreenSize);
+});
+
+// 在组件卸载时移除事件监听
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateScreenSize);
 });
 </script>
 <style scoped>

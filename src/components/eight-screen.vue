@@ -3,8 +3,8 @@
     <img class="logo" src="@/assets/images/eight/logo.png" />
     <div class="hb_box">
       <div class="avatar">
-        <img :src="props.data.tx" alt="" />
-        <span>@聚名人-{{ props.data.name }}</span>
+        <img :src="info.tx" alt="" v-if="info.tx" />
+        <span>@聚名人-{{ info.name }}</span>
       </div>
       <img class="hb_bg" src="@/assets/images/eight/hb_bg.png" alt="" />
       <div class="nzj_box">
@@ -12,12 +12,12 @@
           <p>YEAR-END BONUS</p>
           <strong>#2024年终奖</strong>
         </div>
-        <div class="nzj_box_right">{{ props.data.ws }}</div>
+        <div class="nzj_box_right">{{ info.ws }}</div>
       </div>
       <div class="tips">
         2024的年轮里刻录了<br />
         <p>
-          你在聚名作为<span>{{ props.data.gwmc }}</span
+          你在聚名作为<span>{{ info.gwmc }}</span
           >的辛勤付出。
         </p>
       </div>
@@ -43,7 +43,7 @@
 import { ref, defineProps, onMounted } from "vue";
 import html2canvas from "html2canvas";
 const props = defineProps({
-  data: {
+  info: {
     type: Object,
     default: () => {},
   },
@@ -51,34 +51,57 @@ const props = defineProps({
 const maskShow = ref(true);
 const hburl = ref("");
 onMounted(() => {
-  html2canvas(document.getElementById("container"), {
-    allowTaint: true,
-    useCORS: true,
-    backgroundColor: null,
-    scale: 3,
-  }).then((canvas) => {
-    const baseImg = canvas.toDataURL("image/png");
-    hburl.value = baseImg;
-    setTimeout(() => {
-      maskShow.value = false;
-    }, 2000);
+  // 确保所有图片资源都加载完成
+  const images = Array.from(document.querySelectorAll("img"));
+  const promises = images.map((img) => {
+    return new Promise((resolve, reject) => {
+      if (img.complete) {
+        resolve();
+      } else {
+        img.onload = resolve;
+        img.onerror = reject;
+      }
+    });
   });
+
+  // 等待所有图片加载完成后再渲染
+  Promise.all(promises)
+    .then(() => {
+      html2canvas(document.getElementById("container"), {
+        allowTaint: true,
+        useCORS: true,
+        backgroundColor: null,
+        scale: 3,
+      }).then((canvas) => {
+        const baseImg = canvas.toDataURL("image/png");
+        hburl.value = baseImg;
+        setTimeout(() => {
+          maskShow.value = false;
+        }, 2000);
+      });
+    })
+    .catch((error) => {
+      console.error("图片加载失败:", error);
+    });
 });
 </script>
 <style lang="less" scoped>
 .container {
   width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
+  overflow-y: auto;
   background: url("@/assets/images/eight/page_bg.png") no-repeat;
-  background-size: cover;
+  background-position: top center;
+  background-size: 100%;
+  box-sizing: border-box;
+  padding-top: 88px;
+  overflow: hidden;
 }
 .logo {
   width: 177px;
   height: 49px;
+  display: block;
+  margin: 0 auto 33px;
 }
 .imgurl {
   position: absolute;
@@ -90,13 +113,14 @@ onMounted(() => {
 .jmsl {
   width: 666px;
   height: 152px;
+  display: block;
+  margin: 0 auto 30px;
 }
 .hb_box {
   width: 660px;
   height: 1090px;
-  margin-top: 34px;
-  margin-bottom: 140px;
-  padding: 0 34px;
+  margin: 0 auto 80px;
+  padding: 15px 34px 0;
   background: url("@/assets/images/eight/bg.png") no-repeat;
   background-size: cover;
   box-sizing: border-box;
@@ -170,6 +194,7 @@ onMounted(() => {
   bottom: 278px;
   line-height: 46px;
   font-size: 24px;
+  z-index: 999;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }

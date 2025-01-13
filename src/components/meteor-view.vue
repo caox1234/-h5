@@ -15,10 +15,10 @@
 <style lang="scss" scoped>
 @keyframes meteor-anim {
   0% {
-    transform: rotate(-12deg) translate(419px, 10px);
+    transform: rotate(-32deg) translate(419px, 10px);
   }
   100% {
-    transform: rotate(-12deg) translate(-500px, 10px);
+    transform: rotate(-32deg) translate(-500px, 10px);
   }
 }
 .landscape-moon {
@@ -64,7 +64,7 @@ span {
   top: 143px;
   transform: rotate(-20deg);
   opacity: 0.8;
-  animation: 2s meteor-anim linear infinite;
+  animation: 4s meteor-anim linear infinite;
 }
 .meteor-2 {
   top: 52px;
@@ -73,7 +73,7 @@ span {
   height: 2px;
   transform: rotate(-12deg);
   opacity: 0.6;
-  animation: 2s meteor-anim linear infinite;
+  animation: 4s meteor-anim linear infinite;
 }
 .meteor-3 {
   top: 124px;
@@ -90,7 +90,7 @@ span {
   height: 2px;
   transform: rotate(-12deg);
   opacity: 0.3;
-  animation: 2s meteor-anim linear infinite;
+  animation: 4s meteor-anim linear infinite;
 }
 .meteor-5 {
   top: 65px;
@@ -99,7 +99,7 @@ span {
   height: 2px;
   transform: rotate(-12deg);
   opacity: 0.5;
-  animation: 2s meteor-anim linear infinite;
+  animation: 4s meteor-anim linear infinite;
 }
 .meteor-6 {
   top: 65px;
@@ -109,7 +109,7 @@ span {
   transform: rotate(-21deg);
   opacity: 0.5;
 
-  animation: 2s meteor-anim linear infinite;
+  animation: 4s meteor-anim linear infinite;
 }
 span {
   width: 2px;

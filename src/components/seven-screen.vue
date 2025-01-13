@@ -1,25 +1,64 @@
 <template>
   <div class="container">
-    <img class="title_bg" src="@/assets/images/six/title.png" />
+    <img
+      class="title_bg"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/six/title.png"
+    />
     <div class="scratch_box">
-      <img src="@/assets/images/seven/lw.png" alt="" />
-      <div class="price_box">400000<span>元</span></div>
+      <img
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/seven/lw.png"
+        alt=""
+      />
+      <div class="price_box">{{ info.price }}<span>元</span></div>
       <div class="tips">恭喜你共获得年终奖</div>
-      <div class="info">才智卓越，你的智慧与奋斗是聚名宝贵的财富</div>
+      <div class="info">{{ info.sm }}</div>
     </div>
-    <div class="up_box" @click="emit('update:next')">
-      <img src="@/assets/images/seven/btn.png" alt="" />
+    <div class="up_box" @click="emit('next')">
+      <img
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/seven/btn.png"
+        alt=""
+      />
     </div>
     <div class="light">
-      <img src="@/assets/images/six/guang.png" alt="" />
+      <img
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/six/guang.png"
+        alt=""
+      />
     </div>
   </div>
 </template>
 <script setup>
+import { reactive, watch } from "vue";
 const props = defineProps({
-  type: Number,
+  // 年终奖列表
+  nzjList: {
+    type: Array,
+    default: () => [],
+  },
 });
-const emit = defineEmits(["update:next"]);
+const emit = defineEmits(["next"]);
+
+const info = reactive({
+  bt: "",
+  price: "",
+  sm: "",
+});
+
+watch(
+  () => props.nzjList,
+  (arr) => {
+    if (arr.length > 0) {
+      console.log("arr", arr);
+      // 只需要最后一项
+      const data = arr[arr.length - 1];
+      console.log("data111111", data);
+      info.bt = data.bt;
+      info.price = data.price;
+      info.sm = data.sm;
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 <style lang="less" scoped>
 .container {
@@ -29,8 +68,11 @@ const emit = defineEmits(["update:next"]);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: url("@/assets/images/six/bg.png") no-repeat;
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/six/bg.png")
+    no-repeat;
   background-size: cover;
+  overflow: hidden;
+  animation: fadeBg 1.5s ease-out forwards;
 }
 .title_bg {
   width: 609px;
@@ -47,7 +89,8 @@ const emit = defineEmits(["update:next"]);
   align-items: center;
   width: 676px;
   height: 921px;
-  background: url("@/assets/images/six/chou_bg.png") no-repeat;
+  background: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/six/chou_bg.png")
+    no-repeat;
   background-size: cover;
   img {
     width: 272px;
@@ -111,6 +154,14 @@ const emit = defineEmits(["update:next"]);
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+@keyframes fadeBg {
+  0% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 </style>

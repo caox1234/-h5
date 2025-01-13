@@ -3,16 +3,16 @@
     <div class="bar-content">
       <!-- 播放按钮 -->
       <img
-        class="icon"
+        class="icon rotating-image"
         v-if="isPlay && audioLoaded"
-        src="@/assets/images/icon-music-1.png"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon-music-1.png"
         @click="toggleAudio"
       />
       <!-- 停止按钮 -->
       <img
         class="icon"
         v-else-if="!isPlay && audioLoaded"
-        src="@/assets/images/icon-music-2.png"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon-music-2.png"
         @click="toggleAudio"
       />
     </div>
@@ -20,16 +20,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
-
+import { ref, onMounted, watch } from "vue";
+const props = defineProps({
+  //进入第一屏开始播放
+  isStar: {
+    type: Boolean,
+    default: false,
+  },
+});
 // 控制播放状态
 const isPlay = ref(false);
 // 控制音频是否加载完成
 const audioLoaded = ref(false);
 
 // 创建音频对象
-const audio = new Audio("/public/music.mp3");
-
+const audio = new Audio(
+  "https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/music.mp3"
+);
+audio.loop = true; // 设置音乐循环播放
 // 切换播放/暂停
 const toggleAudio = () => {
   if (isPlay.value) {
@@ -44,13 +52,25 @@ const toggleAudio = () => {
 onMounted(() => {
   audio.oncanplaythrough = () => {
     console.log("音乐加载完成");
-    audioLoaded.value = true; // 音乐加载完成
+    // audioLoaded.value = true; // 音乐加载完成
   };
   // 自动播放音频
-  audio.play().catch((err) => {
-    console.log("自动播放失败：", err);
-  });
+  // audio.play().catch((err) => {
+  //   console.log("自动播放失败：", err);
+  // });
 });
+
+watch(
+  () => props.isStar,
+  (newValue) => {
+    if (newValue) {
+      console.log("开始播放");
+      audioLoaded.value = true; // 音乐加载完成播放
+      toggleAudio();
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style lang="less" scoped>
@@ -63,7 +83,7 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 888;
 }
 
 .bar-content {
@@ -97,5 +117,19 @@ onMounted(() => {
 
 .bar-content > * {
   flex-shrink: 0; /* 防止子元素收缩 */
+}
+/* 设置图片的基础样式 */
+.rotating-image {
+  animation: rotateAnimation 5s linear infinite; /* 5秒一圈，linear表示匀速旋转，infinite表示无限循环 */
+}
+
+/* 定义旋转动画 */
+@keyframes rotateAnimation {
+  0% {
+    transform: rotate(0deg); /* 初始状态 */
+  }
+  100% {
+    transform: rotate(360deg); /* 旋转一圈 */
+  }
 }
 </style>

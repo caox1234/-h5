@@ -1,111 +1,52 @@
 <template>
-  <div
-    class="container"
-    ref="swipeArea"
-    v-if="checkNumber != 17 && checkNumber != 16"
-  >
+  <div class="container" ref="swipeArea">
     <!--顶部导航栏-->
-    <TopBar @click="checkScreen" />
-    <!-- <transition name="slide-fade" mode="out-in"> -->
-    <!--首屏加载进度-->
-    <ProcessScreen v-if="checkNumber == 0" />
-    <!--第一屏-->
-    <oneScreen v-else-if="checkNumber == 1" />
-    <!--第二屏-->
-    <twoScreen v-else-if="checkNumber == 2" />
-    <!--第三屏-->
-    <threeScreen v-else-if="checkNumber == 3" />
-    <!--第四屏-->
-    <fourScreen v-else-if="checkNumber == 4"></fourScreen>
-    <!-- </transition> -->
-    <!--第五屏-->
-    <fiveScreen v-else-if="checkNumber == 5"></fiveScreen>
-    <!--第六屏 基础年终奖-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 6"
-    />
-    <!--第六屏 人才贡献奖-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 7"
-    />
-    <!--第六屏 域名合伙人-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 8"
-    />
-    <!--第六屏 BD合伙人-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 9"
-    />
-    <!--第六屏 域名业务-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 10"
-    />
-    <!--第六屏 BD业务贡献-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 11"
-    />
-    <!--第六屏 雷米业务贡献-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 12"
-    />
-    <!--第六屏 域铺业务贡献-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 13"
-    />
-    <!--第六屏 补贴业务贡献-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 14"
-    />
-    <!--第六屏 理财业务贡献-->
-    <sixScreen
-      :type="checkNumber"
-      :data="info.data"
-      v-else-if="checkNumber == 15"
-    />
-    <!-- 年终奖总计 -->
-    <sevenScreen
-      :type="checkNumber"
-      :data="info.data"
-      @update:next="renderPoster"
-      v-else-if="checkNumber == 16"
-    />
-    <!-- 绘制海报 -->
-    <eightScreen
-      :data="info.data"
-      :type="checkNumber"
-      v-else-if="checkNumber == 17"
-    />
+    <TopBar :isStar="isPlay" />
     <!---过渡屏-->
     <TransitionScreen
       v-model="isTransition"
       :checkNumber="checkNumber"
     ></TransitionScreen>
+
+    <!--首屏加载进度-->
+    <ProcessScreen v-if="checkNumber == 0" @next="checkScreen()" />
+    <oneScreen v-else-if="checkNumber == 1" @next="checkScreen()" />
+    <twoScreen
+      v-else-if="checkNumber == 2"
+      @next="checkScreen()"
+      :rzts="rzts"
+      :rzsj="rzsj"
+    />
+    <threeScreen v-else-if="checkNumber == 3" @next="checkScreen()" />
+    <fourScreen v-else-if="checkNumber == 4" @next="checkScreen()" />
+    <fiveScreen v-else-if="checkNumber == 5" @next="checkScreen()" />
+    <sixScreen
+      :nzjList="nzjList"
+      v-else-if="checkNumber == 6"
+      @next="checkScreen()"
+    />
+    <sevenScreen
+      :nzjList="nzjList"
+      :type="checkNumber"
+      @next="checkScreen()"
+      v-else-if="checkNumber == 7"
+    />
+    <eightScreen
+      :info="info"
+      :type="checkNumber"
+      v-else-if="checkNumber == 8"
+    />
     <!--预加载-->
     <preloadImages></preloadImages>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, toRaw, reactive } from "vue";
-import Hammer from "hammerjs";
+import { ref, reactive, onMounted } from "vue";
+import { isLogin } from "@/utils/auth";
+import { useAppStore } from "@/stores/modules/app";
+import { getCode } from "@/utils/dingTalk";
+import $http from "@/api/index.js";
 import TopBar from "@/components/top-bar.vue";
 import ProcessScreen from "@/components/progress-screen.vue";
 import TransitionScreen from "./components/transition-screen.vue";
@@ -114,95 +55,37 @@ import twoScreen from "@/components/two-screen.vue";
 import threeScreen from "@/components/three-screen.vue";
 import fourScreen from "@/components/four-screen.vue";
 import fiveScreen from "@/components/five-screen.vue";
-
 import preloadImages from "@/components/preloadImages.vue";
 import sixScreen from "@/components/six-screen.vue";
 import sevenScreen from "@/components/seven-screen.vue";
 import eightScreen from "@/components/eight-screen.vue";
-
-// import photoWall from "./components/photo-wall.vue";
-
+const appStore = useAppStore();
 const swipeArea = ref(null);
 const checkNumber = ref(0);
 const isTransition = ref(false); //是否开启过渡动画
+const isPlay = ref(false); //准备就绪开始播放
+const rzsj = ref(0); // 入职时间戳
+const rzts = ref(0); // 入职天数
+const nzjList = ref([]); // 年终奖列表
+// 用户信息
 const info = reactive({
-  code: 1,
-  msg: "ok",
-  data: {
-    rzsj: 1736404414,
-    rzts: 365,
-    ws: "中五位",
-    tx: "",
-    name: "姓名",
-    gwmc: "前端组长",
-    nzj: {
-      p1: {
-        bt: "基础年终奖",
-        price: "10000",
-        sm: "岁月如歌，感谢你的付出，愿未来更灿烂。",
-      },
-      p2: {
-        bt: "人才贡献奖",
-        price: "10000",
-        sm: "岁月如歌，感谢你的付出，愿未来更灿烂。",
-      },
-      p3: {},
-      p4: {},
-      p5: {},
-      p6: {},
-      p7: {},
-      p8: {},
-      p9: {},
-      p10: {},
-      p11: {
-        bt: "总计",
-        price: "400000",
-        sm: "才智卓越，你的智慧与奋斗是聚名宝贵的财富。",
-      },
-    },
-  },
+  name: "",
+  tx: "",
+  ws: "",
+  gwmc: "",
 });
-const nzjArr = ref([]);
-info.data.nzj &&
-  Object.keys(info.data.nzj).forEach((key, index) => {
-    nzjArr.value.push({
-      [index + 6]: info.data.nzj[key],
-    });
-  });
-console.log("nzjArr", nzjArr.value);
 // 切屏
 const checkScreen = () => {
-  const nextScreen = checkNumber.value;
-  console.log("nextScreen: " + nextScreen);
+  console.log("checkScreen", checkNumber.value);
+  if (checkNumber.value === 0) {
+    isPlay.value = true;
+  }
+  checkTransition(checkNumber.value);
+};
 
-  if (nextScreen == 16) {
-    return;
-  }
-  // 判断下一个屏幕是否有数据，没有继续下一个，直到有数据，如果到最后一屏，也就是16，就跳到16
-  if (nextScreen > 5) {
-    const getScreenData = nzjArr.value.find((item) => item[nextScreen]);
-    // 判断是否有数据
-    const hasData = getScreenData && getScreenData[nextScreen].price;
-    console.log("hasData: " + hasData);
-    console.log("nextScreen: " + nextScreen);
-    if (hasData) {
-      checkTransition(nextScreen);
-    } else {
-      checkNumber.value++;
-      checkScreen();
-    }
-  } else {
-    checkTransition(checkNumber.value);
-  }
-  console.log("checkNumber", checkNumber.value);
-};
-const renderPoster = () => {
-  checkNumber.value = 17;
-};
 // 过渡
 const checkTransition = (type) => {
   isTransition.value = true;
-
   checkNumber.value = type;
   setTimeout(() => {
     checkNumber.value++;
@@ -211,54 +94,93 @@ const checkTransition = (type) => {
     isTransition.value = false;
   }, 2000);
 };
-onMounted(() => {
-  const hammer = new Hammer(swipeArea.value);
-  hammer.on("panup pandown tap press", (ev) => {
-    // console.log("ev:", ev);
-    if (ev.type === "panup") {
-      // checkNumber.value = 1;
-      checkScreen();
-    } else {
-      // checkNumber.value = 2;
+
+// 过滤掉空数组的项
+const filteredData = (nzjList) => {
+  return Object.values(nzjList).filter(
+    (item) => item.length || (item.bt && item.price && item.sm)
+  );
+};
+
+// 获取钉钉登陆
+const ddLogin = () => {
+  if (!isLogin()) {
+    console.log("---------");
+    // TODO: l
+    getCode(async (code) => {
+      await appStore.ddLogin({
+        code,
+      });
+    });
+  } else {
+    fetchData();
+  }
+};
+// 获取用户信息
+const fetchData = async () => {
+  try {
+    const res = await $http.getInfo();
+    if (res.code == 1) {
+      const data = res.data;
+      rzsj.value = data.rzsj; // 入职时间戳
+      rzts.value = data.rzts; // 入职天数
+      nzjList.value = filteredData(data.nzj); // 年终奖列表
+      // 用户信息
+      info.name = data.name;
+      info.tx = data.tx;
+      info.ws = data.ws;
+      info.gwmc = data.gwmc;
     }
-  });
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+onMounted(() => {
+  console.log("获取用户信息");
+  // fetchData();
+  ddLogin();
 });
-// 清理事件监听
-onBeforeUnmount(() => {
-  hammer.destroy();
-});
+
+// 过渡动画
+const beforeEnter = (el) => {
+  el.style.opacity = 0;
+};
+
+const enter = (el, done) => {
+  el.offsetHeight; // 强制重绘
+  el.style.transition = "opacity 1s ease-out";
+  el.style.opacity = 1;
+  done();
+};
+
+const leave = (el, done) => {
+  el.style.transition = "opacity 1s ease-in";
+  el.style.opacity = 0;
+  done();
+};
 </script>
+
 <style scoped>
 .container {
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
-}
-/* slide-fade 动画的过渡效果 */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* 透明度和位移平滑过渡 */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
 }
 
-/* 进入时的透明度和缩放 */
-.slide-fade-enter {
-  opacity: 0.6;
-  transform: scale(0.9); /* 轻微缩小 */
+/* 对安卓设备进行兼容 */
+@supports (--css: variables) {
+  .container {
+    padding-bottom: 20px; /* 对安卓设备应用默认的底部间距 */
+  }
 }
 
-/* 离开时的透明度和缩放 */
-.slide-fade-leave-to {
-  opacity: 0.6;
-  transform: scale(1.1); /* 离开时稍微放大，给人深度感 */
+/* 第一屏的渐隐效果 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease-out;
 }
-
-/* 新组件进入时 */
-.slide-fade-enter-active {
-  z-index: 2; /* 新组件进入时位于顶部 */
-}
-
-/* 旧组件离开时 */
-.slide-fade-leave-active {
-  z-index: 1; /* 旧组件离开时位于底部 */
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+  opacity: 0;
 }
 </style>

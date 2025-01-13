@@ -1,11 +1,14 @@
 <template>
-  <div class="container">
+  <div class="container" ref="transitionView">
     <!--星空背景-->
     <startlitSky />
     <div class="mess-box">
       <p class="p1">Hi，聚名人</p>
       <p class="p2">
-        <span>2023</span>年<span>9</span>月<span>21</span>日，我们相遇了。
+        <span>{{ year }}</span
+        >年<span>{{ month }}</span
+        >月<span>{{ day }}</span
+        >日，我们相遇了。
       </p>
       <p class="p3">
         时间过得真快，转眼已经<span>
@@ -21,46 +24,163 @@
       <p class="p4">奋斗的路上，有你，真好~</p>
     </div>
     <!--人物行走-->
-    <img class="xj-1" src="@/assets/images/two/xj-1.png" />
-    <img class="xj-2" src="@/assets/images/two/xj-2.png" />
-    <img class="xj-3" src="@/assets/images/two/xj-3.png" />
+    <img
+      class="xj-1"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/two/xj-1.png"
+    />
+    <img
+      class="xj-2"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/two/xj-2.png"
+    />
+    <img
+      class="xj-3"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/two/xj-3.png"
+    />
     <!--💗-->
-    <img class="img-ax" src="@/assets/images/two/ax.png" />
+    <img
+      class="img-ax"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/two/ax.png"
+    />
 
     <!--萤火虫-->
     <firefly class="firefly-box" />
+    <img
+      class="icon-up"
+      src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/icon-up.png"
+    />
   </div>
 </template>
 <script setup>
 /**
  * 第二屏
  */
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import startlitSky from "./starlit-sky.vue";
 import firefly from "./firefly.vue";
 import NumberFlow from "@number-flow/vue";
+import Hammer from "hammerjs";
+
+const props = defineProps({
+  // 入职天数
+  rzts: {
+    type: Number,
+    default: 0,
+  },
+  // 入职时间戳
+  rzsj: {
+    type: Number,
+    default: 0,
+  },
+});
+const emit = defineEmits(["next"]);
 
 const days = ref(0); // 工龄（天）
 
-setTimeout(() => {
-  days.value = 2000;
-}, 3000);
+const year = ref(0); //年
+const month = ref(0); //月
+const day = ref(0); //日
+
+const transitionView = ref();
+let hammer = null;
+let startPosition = { x: 0, y: 0 }; // 记录按压开始的坐标
+let isMoving = false; // 标记是否开始移动
+
 // 动画开始的回调
-const handleAnimationStart = () => {
-  console.log("的撒撒打算大");
+const handleAnimationStart = () => {};
+
+onMounted(() => {
+  if (transitionView.value) {
+    hammer = new Hammer(transitionView.value);
+
+    // 配置 pan 手势识别器
+    hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+
+    // 监听按压开始事件
+    hammer.on("panstart", (ev) => {
+      startPosition = { x: ev.center.x, y: ev.center.y }; // 记录按压的起始坐标
+      isMoving = false; // 重置移动标志
+    });
+
+    // 监听按压移动事件
+    hammer.on("panmove", (ev) => {
+      if (!isMoving) {
+        // 判断是否开始移动超过一定的距离
+        const distance = Math.sqrt(
+          Math.pow(ev.center.x - startPosition.x, 2) +
+            Math.pow(ev.center.y - startPosition.y, 2)
+        );
+
+        if (distance > 10) {
+          // 设定一个阈值，移动超过 10px 就认为开始移动
+          isMoving = true; // 开始移动
+        }
+      }
+    });
+
+    // 监听按压结束事件
+    hammer.on("panend", (ev) => {
+      if (isMoving) {
+        // 计算最终移动的距离并判断是否满足条件
+        const endPosition = { x: ev.center.x, y: ev.center.y };
+        const distance = Math.sqrt(
+          Math.pow(endPosition.x - startPosition.x, 2) +
+            Math.pow(endPosition.y - startPosition.y, 2)
+        );
+
+        if (distance > 50) {
+          // 根据需求调整距离阈值
+          console.log("成功完成按压并滑动");
+          emit("next");
+        }
+      } else {
+        console.log("按压没有足够的滑动距离");
+      }
+    });
+  } else {
+    console.error("未找到 transitionView 元素");
+  }
+});
+// 获取年月日
+const getFormattedDate = (timestamp) => {
+  const date = new Date(timestamp * 1000); // 将时间戳转换为毫秒
+  year.value = date.getFullYear();
+  month.value = String(date.getMonth() + 1).padStart(2, "0"); // 月份从0开始，需加1，并补充0
+  day.value = String(date.getDate()).padStart(2, "0"); // 补充0到个位数
 };
+// 清理事件监听
+onBeforeUnmount(() => {
+  hammer.destroy();
+});
+watch(
+  () => props.rzts,
+  (newValue) => {
+    console.log("你看看啊", newValue);
+    setTimeout(() => {
+      days.value = newValue;
+    }, 1500);
+  },
+  { immediate: true, deep: true }
+);
+watch(
+  () => props.rzsj,
+  (newValue) => {
+    getFormattedDate(newValue);
+  },
+  { immediate: true, deep: true }
+);
 </script>
 <style lang="less" scoped>
 .container {
   width: 100vw;
   height: 100vh;
-  background-image: url("@/assets/images/two/bg.png");
+  background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/two/bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
   background-position: bottom center;
   animation: fadeBg 1.5s ease-out forwards;
+  overflow: hidden;
 }
 .mess-box {
   color: #ffffff;
@@ -69,7 +189,7 @@ const handleAnimationStart = () => {
   /* p1 */
   .p1 {
     font-size: 59px;
-    font-weight: bold;
+    font-weight: 400;
     font-family: "TencentSans-W7", sans-serif;
     opacity: 0; /* 初始不可见 */
     animation: fadeUp 1.5s ease-out forwards; /* 动画延迟和持续时间 */
@@ -261,17 +381,28 @@ const handleAnimationStart = () => {
     color: #ffffff;
     margin: 90px 0 0 25px;
   }
-  // .xj-1 {
-  //   bottom: 60px !important;
-  //   left: 15px !important;
-  // }
-  // .xj-2 {
-  //   bottom: 95px !important;
-  //   left: 85px !important;
-  // }
-  // .xj-3 {
-  //   bottom: 125px !important;
-  //   left: 155px !important;
-  // }
+}
+.icon-up {
+  width: 47px;
+  height: 45px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  margin: 92px auto 84px;
+  display: block;
+  animation: up 3s ease-in-out infinite;
+}
+/* 浮动动画 */
+@keyframes up {
+  0% {
+    transform: translateY(0); /* 初始位置 */
+  }
+  50% {
+    transform: translateY(-20px); /* 上浮 */
+  }
+  100% {
+    transform: translateY(0); /* 回到初始位置 */
+  }
 }
 </style>

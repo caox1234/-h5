@@ -1,7 +1,10 @@
 <template>
   <div class="border">
     <div class="bg-button">
-      <img class="img-text" src="@/assets/images/one/img-text.png" />
+      <img
+        class="img-text"
+        src="https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/img-text.png"
+      />
       <div id="container-stars">
         <div id="stars"></div>
       </div>
@@ -15,7 +18,7 @@
 </script>
 <style lang="less" scoped>
 .border {
-  background-image: url("@/assets/images/one/bg-border.png");
+  background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/bg-border.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -25,7 +28,7 @@
   align-items: center;
   justify-content: center;
   .bg-button {
-    background-image: url("@/assets/images/one/bg-button.png");
+    background-image: url("https://jmceshi.oss-cn-hangzhou.aliyuncs.com/nzjh5/one/bg-button.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
